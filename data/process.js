@@ -3,6 +3,8 @@ const {filter, map} = require('rxjs/operators');
 const net = require('net')
 var lastCreatedQuestionTag = 0
 const handleConnection = socket => {
+    console.log("connection estabilished", socket.id);
+
     socket.on('error', (err) => {
             console.log("Qualquer erro que possa dar por desconexão ou problemas no socket.")
         }
@@ -32,9 +34,10 @@ const handleConnection = socket => {
     })
 }
 
-exports.initProcess = function() {
-    const server = net.createServer(handleConnection)
-    server.listen(4000, '127.0.0.1')
+exports.initProcess = function(io) {
+    /*const server = net.createServer(handleConnection)
+    server.listen(4000, '127.0.0.1')*/
+    io.on('connection', handleConnection);
 }
 
 function processQuestions(datas) {
