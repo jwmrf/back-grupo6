@@ -11,7 +11,6 @@ const handleConnection = socket => {
         try {
             var parsedData = JSON.parse(data)
         } catch (error) {
-            console.log(data)
             var parsedData = null
         }
         if (parsedData) {
