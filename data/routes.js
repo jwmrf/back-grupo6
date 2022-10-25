@@ -29,7 +29,7 @@ router.get('/questionByTag',  async function (req, res) {
             socketQuestion.on('data', data => {
                 res.end(data)
             })
-        }, 5000)
+        }, 60000)
     }
 
     polling()
