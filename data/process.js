@@ -8,18 +8,25 @@ const handleConnection = socket => {
         }
     )
     socket.on('data', data => {
-        let parsedData = JSON.parse(data)
-        switch (parsedData.type) {
-            case 'questions':
-                verify = processQuestions(parsedData.data)
-                socket.write(JSON.stringify(verify))
-                break;
-            case 'questionsTag':
-                verify = verifyLastQuestionTag(parsedData.data)
-                socket.write(JSON.stringify(verify))
-                break;
-            default:
-                break;
+        try {
+            var parsedData = JSON.parse(data)
+        } catch (error) {
+            console.log(data)
+            var parsedData = null
+        }
+        if (parsedData) {
+            switch (parsedData.type) {
+                case 'questions':
+                    verify = processQuestions(parsedData.data)
+                    socket.write(JSON.stringify(verify))
+                    break;
+                case 'questionsTag':
+                    verify = verifyLastQuestionTag(parsedData.data)
+                    socket.write(JSON.stringify(verify))
+                    break;
+                default:
+                    break;
+            }
         }
         
     })
