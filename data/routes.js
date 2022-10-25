@@ -23,8 +23,15 @@ router.get('/tags',  async function (req, res) {
 
 router.get('/questionByTag',  async function (req, res) {
     let tag = req.query.tag ? req.query.tag : ''
-    var questions = await requests.getLastQuestionByTag(tag)
-    res.send(JSON.stringify(questions.data.items))
+
+    const polling = () => {
+        setInterval(async () => {
+            var questions = await requests.getLastQuestionByTag(tag)
+            console.log(JSON.stringify(questions.data.items) + '\n')
+        }, 60000)
+    }
+
+    polling()
 })
 
 exports.routes = router;
