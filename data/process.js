@@ -1,4 +1,7 @@
+const {range} = require('rxjs');
+const {filter, map} = require('rxjs/operators');
 const net = require('net')
+var lastCreatedQuestionTag = 0
 const handleConnection = socket => {
     socket.on('error', (err) => {
             console.log("Qualquer erro que possa dar por desconexão ou problemas no socket.")
@@ -6,8 +9,19 @@ const handleConnection = socket => {
     )
     socket.on('data', data => {
         let parsedData = JSON.parse(data)
-        let verify = processQuestions(parsedData)
-        socket.write(JSON.stringify(verify))
+        switch (parsedData.type) {
+            case 'questions':
+                verify = processQuestions(parsedData.data)
+                socket.write(JSON.stringify(verify))
+                break;
+            case 'questionsTag':
+                verify = verifyLastQuestionTag(parsedData.data)
+                socket.write(JSON.stringify(verify))
+                break;
+            default:
+                break;
+        }
+        
     })
 }
 
@@ -20,6 +34,21 @@ function processQuestions(datas) {
     if(typeof(datas) == 'object') {
         return datas
     } else {
-        return []
+        return false
     }
+}
+
+function verifyLastQuestionTag(datas) {
+    let size = Object.keys(datas).length;
+    let finalData = []
+    range(0, size).pipe(
+    map(x => datas[x]),
+      filter(x => processQuestions(x) !== false),
+      filter(x => lastCreatedQuestionTag < x.creation_date)
+    )
+    .subscribe(data => finalData.push(data));
+    if (finalData.length) {
+        lastCreatedQuestionTag = finalData[0].creation_date
+    }
+    return finalData
 }

@@ -2,15 +2,13 @@ const router = require('express').Router()
 const requests = new (require('./requests'))
 
 const net = require('net')
-const client = new net.Socket()
-client.connect(4000, 'localhost', () => {
-
-})
+const socketQuestion = new net.Socket()
+socketQuestion.connect(4000, 'localhost', () => {})
 router.get('/questions',  async function (req, res) {
     let sort = req.query.sort ? req.query.sort : 'activity'
     var questions = await requests.getQuestions(sort)
-    client.write(JSON.stringify(questions.data.items))
-    client.on('data', data => {
+    socketQuestion.write(JSON.stringify({type:'questions',data:questions.data.items}))
+    socketQuestion.on('data', data => {
         res.end(data)
     })
 })
@@ -18,7 +16,7 @@ router.get('/questions',  async function (req, res) {
 router.get('/tags',  async function (req, res) {
     let sort = req.query.sort ? req.query.sort : 'popular'
     var questions = await requests.getTags(sort)
-    res.send(JSON.stringify(questions.data.items))
+    res.send(JSON.stringify({type:'questions',data:questions.data.items}))
 })
 
 router.get('/questionByTag',  async function (req, res) {
@@ -27,8 +25,11 @@ router.get('/questionByTag',  async function (req, res) {
     const polling = () => {
         setInterval(async () => {
             var questions = await requests.getLastQuestionByTag(tag)
-            console.log(JSON.stringify(questions.data.items) + '\n')
-        }, 60000)
+            socketQuestion.write(JSON.stringify({type:'questionsTag',data:questions.data.items}))
+            socketQuestion.on('data', data => {
+                res.end(data)
+            })
+        }, 5000)
     }
 
     polling()

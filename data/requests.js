@@ -10,9 +10,9 @@ module.exports = class Requests {
 
     getLastQuestionByTag (tag = '') {
         if (!tag) {
-            return api.get(`questions?pagesize=1&order=desc&sort=creation&site=stackoverflow`)
+            return api.get(`questions?pagesize=5&order=desc&sort=creation&site=stackoverflow`)
         } else {
-            return api.get(`questions?pagesize=1&order=desc&sort=creation&tagged=${tag}&site=stackoverflow`)
+            return api.get(`questions?pagesize=3&order=desc&sort=creation&tagged=${tag}&site=stackoverflow`)
         }
     }
 
