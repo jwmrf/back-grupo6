@@ -14,6 +14,4 @@ const io = require('socket.io')(server, {
         origin: '*'
     }
 });
-Process(io)
-server.keepAliveTimeout = (60 * 1000) + 1000;
-server.headersTimeout = (60 * 1000) + 2000;
+Process(io);

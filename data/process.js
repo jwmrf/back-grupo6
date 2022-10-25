@@ -1,7 +1,40 @@
 const {range} = require('rxjs');
 const {filter, map} = require('rxjs/operators');
-const net = require('net')
+const requests = new (require('./requests'));
+
 var lastCreatedQuestionTag = 0
+
+exports.checkData = (data) => {
+    try {
+        var parsedData = JSON.parse(data)
+    } catch (error) {
+        var parsedData = null
+    }
+    if (parsedData) {
+        switch (parsedData.type) {
+            case 'questions':
+                verify = processQuestions(parsedData.data)
+
+                return verify
+            case 'questionsTag':
+                verify = verifyLastQuestionTag(parsedData.data)
+
+                return verify
+            default:
+                break;
+        }
+    }    
+}
+
+const polling = (io) => {
+    setInterval(async () => {
+        var questions = await requests.getLastQuestionByTag('')
+        const data = this.checkData(JSON.stringify({type:'questionsTag',data:questions.data.items}))
+        
+        io.emit('new_question', data);
+    }, 60000);
+}
+
 const handleConnection = socket => {
     console.log("connection estabilished", socket.id);
 
@@ -9,34 +42,12 @@ const handleConnection = socket => {
             console.log("Qualquer erro que possa dar por desconexão ou problemas no socket.")
         }
     )
-    socket.on('data', data => {
-        try {
-            var parsedData = JSON.parse(data)
-        } catch (error) {
-            var parsedData = null
-        }
-        if (parsedData) {
-            switch (parsedData.type) {
-                case 'questions':
-                    verify = processQuestions(parsedData.data)
-                    socket.write(JSON.stringify(verify))
-                    break;
-                case 'questionsTag':
-                    verify = verifyLastQuestionTag(parsedData.data)
-                    socket.write(JSON.stringify(verify))
-                    break;
-                default:
-                    break;
-            }
-        }
-        
-    })
 }
 
 exports.initProcess = function(io) {
-    /*const server = net.createServer(handleConnection)
-    server.listen(4000, '127.0.0.1')*/
     io.on('connection', handleConnection);
+
+    polling(io);
 }
 
 function processQuestions(datas) {
